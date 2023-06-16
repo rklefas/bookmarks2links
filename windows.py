@@ -5,14 +5,18 @@ import glob
 import os
 from pathlib import Path
 import time
+import re
 
 config = configparser.RawConfigParser()
 config.optionxform = str
 
 
 def clean_title(x):
-    x = x.replace(":", "-")
-    x = x.replace("/", "-")
+
+    x = re.sub("[\W]", "_", x)
+    x = re.sub("_+", " ", x).strip()
+    x = x[0:100]
+    
     return x
     
 
@@ -24,29 +28,35 @@ def convert_date(added):
    
 
 def create_bookmark(bookmark, folder_name):
-    next_file_name = '{}/{}.url'.format(folder_name, clean_title(bookmark['title']))
-    date = convert_date(bookmark['add_date'])
-
-    print('+ Bookmark:   ', date, next_file_name)
     
-    with open(next_file_name, 'w') as configfile:
-        try:
+    try:
+    
+        if len(bookmark['title']) < 10:
+            next_file_name = bookmark['title'] + ' ' + bookmark['url']
+        else:
+            next_file_name = bookmark['title']
+
+        next_file_name = '{}/{}.url'.format(folder_name, clean_title(next_file_name))
+        date = convert_date(bookmark['add_date'])
+
+        print('+ Bookmark:   ', date, next_file_name)
+        
+        with open(next_file_name, 'w') as configfile:
             config['InternetShortcut'] = {'URL': bookmark['url'], 'DateModified': date}
             config.write(configfile)
-        except Exception as e: 
-            print('! Exception encountered', e)
-            input('Press enter to continue processing... ')
+        if os.path.isfile(next_file_name):
+        
+            # adjust timestamp on file
+            filedate.File(next_file_name).set(
+                created = date,
+                modified = date
+            )
+            
+    except Exception as e: 
+        print('! Exception encountered', e)
+        input('Press enter to continue processing... ')
             
     
-    if os.path.isfile(next_file_name):
-    
-        # adjust timestamp on file
-        filedate.File(next_file_name).set(
-            created = date,
-            modified = date
-        )
-    else:
-        print('- Error creating:', next_file_name)
         
 
 def create_folders(child, folder_name, folder_date = None):
