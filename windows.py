@@ -42,7 +42,11 @@ def create_bookmark(bookmark, folder_name):
         print('+ Bookmark:   ', date, next_file_name)
         
         with open(next_file_name, 'w') as configfile:
-            config['InternetShortcut'] = {'URL': bookmark['url'], 'DateModified': date}
+            config['InternetShortcut'] = {}
+            config['InternetShortcut']['url'] = bookmark['url']
+            config['InternetShortcut']['add_date'] = date
+            config['InternetShortcut']['title'] = bookmark['title'].encode(encoding="ascii",errors="ignore").decode()
+#            config['InternetShortcut']['icon'] = bookmark['icon']
             config.write(configfile)
         if os.path.isfile(next_file_name):
         
@@ -88,4 +92,5 @@ if __name__ == '__main__':
         create_folders(bookmarks, Path(file).stem)
 
 
-    input('Press enter to exit... ')
+    print('now exiting... ')
+    time.sleep(10)
